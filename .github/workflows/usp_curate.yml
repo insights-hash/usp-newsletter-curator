@@ -1,0 +1,37 @@
+name: USP Newsletter Curator
+
+on:
+  # Runs weekly on Tuesdays at ~6am New York time (same cadence as DEI newsletter)
+  # 11:00 UTC = 6am EST (winter) / 7am EDT (summer)
+  schedule:
+    - cron: "0 11 * * 2"
+  # Can also be triggered manually from the Actions tab
+  workflow_dispatch:
+
+jobs:
+  curate-usp:
+    name: Curate USP Newsletter Articles
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run USP curator
+        env:
+          INOREADER_TOKEN:   ${{ secrets.INOREADER_TOKEN }}
+          INOREADER_APP_ID:  ${{ secrets.INOREADER_APP_ID }}
+          INOREADER_APP_KEY: ${{ secrets.INOREADER_APP_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          AIRTABLE_TOKEN:    ${{ secrets.AIRTABLE_TOKEN }}
+        run: python usp_curator.py
